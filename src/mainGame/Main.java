@@ -35,7 +35,7 @@ public class Main extends StateBasedGame {
 	public Main(String name) throws SlickException{
 		super(name);
 		
-		this.addState(new Base());
+		this.addState(new Base(base));
 
 	}
 

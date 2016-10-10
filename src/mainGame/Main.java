@@ -35,7 +35,7 @@ public class Main extends StateBasedGame {
 	public Main(String name) throws SlickException{
 		super(name);
 		
-		this.addState(new Base(base));
+		this.addState(new Base(base, "/lv1.png"));
 
 	}
 

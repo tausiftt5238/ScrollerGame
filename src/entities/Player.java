@@ -11,6 +11,8 @@ public class Player extends Entity{
 	
 	String direction;
 	Animation movingLeft, movingRight;
+	Animation standingRight, standingLeft;
+	Animation jumpingLeft, jumpingRight;
 	
 	public Player(float x, float y){		
 		super(x,y);
@@ -18,10 +20,16 @@ public class Player extends Entity{
 		y = 480/2;
 		
 		movingLeft = new Animation(); movingLeft.setAutoUpdate(true);
-		movingRight = new Animation(); movingRight.setAutoUpdate(true);	
+		movingRight = new Animation(); movingRight.setAutoUpdate(true);
+		
+		standingLeft = new Animation();
+		standingRight = new Animation();
+		
+		jumpingLeft = new Animation();
+		jumpingRight = new Animation();
 		
 		try{
-			sh = new SpriteSheet("/res/megaman.png",64, 64);
+			sh = new SpriteSheet("megaman.png",64, 64);
 		}catch(SlickException e){
 			e.printStackTrace();
 		}
@@ -35,14 +43,17 @@ public class Player extends Entity{
 		int row = 1;
 		for(int col = 0 ; col < 10 ; col++){
 			if(row == 1){
-				
-				movingRight.addFrame(sh.getSprite(col, row), 200);
-				if(col == 1){
-					movingRight.addFrame(sh.getSprite(0, row), 200);
-				}
+				movingRight.addFrame(sh.getSprite(col, row), 100);
+				movingLeft.addFrame(sh.getSprite(col, row).getFlippedCopy(true, false), 100);
 			}
 		}
-		anim = movingRight;
+		standingRight.addFrame(sh.getSprite(0, 0), 100);
+		standingLeft.addFrame(sh.getSprite(0, 0).getFlippedCopy(true, false),100);
+		
+		jumpingRight.addFrame(sh.getSprite(1, 0), 100);
+		jumpingLeft.addFrame(sh.getSprite(1, 0).getFlippedCopy(true, false),100);
+		
+		anim = standingRight;
 		direction = "right";
 	}
 	
@@ -56,7 +67,15 @@ public class Player extends Entity{
 		else if(direction.equals("right")){
 			anim = movingRight;
 			this.direction = "right";
-		}			
+		}
+		else if(direction.equals("standing")){
+			if(this.direction.equals("left")) anim = standingLeft;
+			else anim = standingRight;
+		}
+		if(falling){
+			if(this.direction.equals("left")) anim = jumpingLeft;
+			else anim = jumpingRight;
+		}
 	}
 
 	@Override
@@ -65,13 +84,20 @@ public class Player extends Entity{
 	}
 	public void render(Graphics g){
 		g.draw(hitBox);
+		g.draw(footing);
 	}
 	@Override
 	protected void setHitBox() {
-		hitBox = new Rectangle(0,0,38,80);
-		hitBox.setLocation(x+5, y);
+		hitBox = new Rectangle(0,0,32,32);
+		hitBox.setLocation(x+20, y+17);
+		
+		footing = new Rectangle(0,0,32,2);
+		footing.setLocation(x+20, y+17+31);
 	}
 	public String getDirection(){
 		return direction;
+	}
+	public int animationNumber(){
+		return anim.getFrame();
 	}
 }

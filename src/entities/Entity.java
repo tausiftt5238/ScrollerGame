@@ -15,19 +15,24 @@ public abstract class Entity {
 	protected Image sprite;
 	
 	protected Shape hitBox;
+	protected Shape footing;
 	protected boolean collide;
+	protected boolean falling;
 	
 	protected SpriteSheet sh;
 	
 	public Entity(float x, float y){
 		this.x = x;
 		this.y = y;
+		collide = true;
+		falling = true;
 	}
 	
 	public Entity(float x, float y, boolean collide){
 		this.x = x;
 		this.y = y;
 		this.collide = collide;
+		this.falling = true;
 	}
 	
 	public Entity(float x, float y, Image sprite, boolean collide){
@@ -54,6 +59,15 @@ public abstract class Entity {
 	}
 	public void getSprite(Image sprite){
 		this.sprite = sprite;
+	}
+	public boolean gravity(Entity ob){
+		return footing.intersects(ob.getHitBox());
+	}
+	public boolean getFalling(){
+		return falling;
+	}
+	public void setFalling(boolean falling){
+		this.falling = falling;
 	}
 	public float getX(){ return x; }
 	public float getY(){ return y; }

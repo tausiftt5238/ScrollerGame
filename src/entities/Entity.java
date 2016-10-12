@@ -18,6 +18,8 @@ public abstract class Entity {
 	protected Shape footing;
 	protected boolean collide;
 	protected boolean falling;
+	protected boolean damageStatus;
+
 	
 	protected SpriteSheet sh;
 	
@@ -26,6 +28,7 @@ public abstract class Entity {
 		this.y = y;
 		collide = true;
 		falling = true;
+		damageStatus = false;
 	}
 	
 	public Entity(float x, float y, boolean collide){
@@ -33,6 +36,7 @@ public abstract class Entity {
 		this.y = y;
 		this.collide = collide;
 		this.falling = true;
+		damageStatus = false;
 	}
 	
 	public Entity(float x, float y, Image sprite, boolean collide){
@@ -40,6 +44,7 @@ public abstract class Entity {
 		this.y = y;
 		this.sprite = sprite;
 		this.collide = collide;
+		damageStatus = false;
 	}
 	public abstract void update(float x, float y);
 	public abstract void render(float x, float y);

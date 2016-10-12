@@ -16,6 +16,7 @@ import org.newdawn.slick.state.StateBasedGame;
 
 import entities.Entity;
 import entities.Player;
+import entities.hostile.Enemy;
 import entities.inanimate.Inanimate;
 
 public class Base extends BasicGameState{
@@ -31,14 +32,21 @@ public class Base extends BasicGameState{
 	
 	private String map;
 	
+	private int jump;
+	private int damage;
+	
+	private final int jumpLimit = 24;
+	private final int damageLengthLimit = 24;
+	
 	float speed = 0.3f;
 	
 	LinkedList <Entity> entityList;
+	LinkedList <Entity> enemyList;
 	
 	public Base(int state, String map){
 		super();
-		x = -(0 << 6);
-		y = -(0 << 6);
+		x = -(20 << 6) + 640/2;
+		y = -(19 << 6) + 480/2;
 		this.state = state;
 		this.map = map;
 	}
@@ -48,6 +56,11 @@ public class Base extends BasicGameState{
 		terrain = new SpriteSheet("Terrain.png",64,64);
 		
 		entityList = new LinkedList <Entity>();
+		enemyList = new LinkedList <Entity> ();
+		
+		Enemy enemy = new Enemy((25 << 6), (19 << 6));
+		
+		enemyList.add(enemy);
 		
 		loadTerrain();
 	}
@@ -55,11 +68,15 @@ public class Base extends BasicGameState{
 	@Override
 	public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
 		drawEntity(g);
+		drawEnemy(g);
+		
 		Player.player.render(x, y);
 		Player.player.render(g);
+		
 		g.drawString(Player.player.animationNumber() + " ", 500, 400);
 		g.drawString(x + " " + y, 500, 0);
-		
+		g.drawString(jump + "", 500, 20);
+		g.drawString(Player.player.getFalling() + " ", 500, 40);
 		
 	}
 
@@ -67,8 +84,67 @@ public class Base extends BasicGameState{
 	public void update(GameContainer gc, StateBasedGame sbg, int delta) throws SlickException {
 		Input input = gc.getInput();
 		
+		gravity();
+		
 		float change = delta * speed;
 
+		float tempX = x ;
+
+		if(input.isKeyDown(Input.KEY_LEFT) && !Player.player.getDamageStatus()){
+			Player.player.update("left");
+			x += (int)change;
+		}
+		
+		else if(input.isKeyDown(Input.KEY_RIGHT) && !Player.player.getDamageStatus()){
+			Player.player.update("right");
+			x -= (int)change;
+		}
+		else {
+			Player.player.update("standing");
+		}
+		
+		if(input.isKeyPressed(Input.KEY_X) 
+				&& !Player.player.getFalling() && !Player.player.getDamageStatus()){
+			jump = jumpLimit;
+			
+		}
+		if(jump > 0){
+			jump--;
+			y += 10;
+		}
+		if(damage > 0){
+			damage--;
+			if(Player.player.getDirection().equals("left")){
+				x -= (int) change;
+			}
+			else if(Player.player.getDirection().equals("right")){
+				x += (int) change;
+			}
+			Player.player.damage(true);
+		} else Player.player.damage(false);
+		
+		for(Entity z : entityList) z.update(x, y);
+		for(Entity z: enemyList) z.update(x, y);
+		
+		for(Entity z: entityList){
+			if(z.collision(Player.player)){
+				x = tempX;
+				break;
+			}
+		}
+		if(!Player.player.getDamageStatus())
+		for(Entity z: enemyList){
+			if(z.collision(Player.player)){
+				damage = damageLengthLimit;
+				break;
+			}
+		}
+		
+		for(Entity z : entityList) z.update(x, y);
+		for(Entity z : enemyList) z.update(x, y);
+		
+	}
+	private void gravity(){
 		boolean tempFall = false;
 		for(Entity z: entityList){
 			tempFall = tempFall | Player.player.gravity(z);
@@ -89,31 +165,9 @@ public class Base extends BasicGameState{
 				for(Entity z: entityList) z.update(x, y);
 			}
 		}
-		
-		float tempX = x , tempY = y;
-
-		if(input.isKeyDown(Input.KEY_LEFT)){
-			Player.player.update("left");
-			x += (int)change;
+		else if(!Player.player.getFalling()){
+			jump = 0;
 		}
-		
-		else if(input.isKeyDown(Input.KEY_RIGHT)){
-			Player.player.update("right");
-			x -= (int)change;
-		}
-		
-		else {
-			Player.player.update("standing");
-		}
-		for(Entity z : entityList) z.update(x, y);
-		for(Entity z: entityList){
-			if(z.collision(Player.player)){
-				x = tempX;
-				y = tempY;
-				break;
-			}
-		}
-		for(Entity z : entityList) z.update(x, y);
 		
 	}
 
@@ -132,7 +186,7 @@ public class Base extends BasicGameState{
 		for(int i = 0 ; i < terrainMap.getWidth(); i++){
 			for(int j = 0 ; j < terrainMap.getHeight(); j++){
 				if(terrainMap.getRGB(i, j) == 0xFF3a4646){
-					Inanimate rock = new Inanimate((i<<6),(j<<6),terrain.getSprite(0, 2), true);
+					Inanimate rock = new Inanimate((i<<6),(j<<6),terrain.getSprite(3, 3), true);
 					entityList.add(rock);
 				}
 			}
@@ -141,6 +195,12 @@ public class Base extends BasicGameState{
 	private void drawEntity(Graphics g){
 		for(Entity z : entityList){
 			z.render(x, y);
+			z.render(g);
+		}
+	}
+	private void drawEnemy(Graphics g){
+		for(Entity z: enemyList){
+			z.render(x,y);
 			z.render(g);
 		}
 	}

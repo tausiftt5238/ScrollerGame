@@ -13,7 +13,8 @@ public class Player extends Entity{
 	Animation movingLeft, movingRight;
 	Animation standingRight, standingLeft;
 	Animation jumpingLeft, jumpingRight;
-	
+	Animation damageLeft, damageRight;
+		
 	public Player(float x, float y){		
 		super(x,y);
 		x = 640/2;
@@ -27,6 +28,9 @@ public class Player extends Entity{
 		
 		jumpingLeft = new Animation();
 		jumpingRight = new Animation();
+		
+		damageLeft = new Animation(); damageLeft.setAutoUpdate(true);
+		damageRight = new Animation(); damageRight.setAutoUpdate(true);
 		
 		try{
 			sh = new SpriteSheet("megaman.png",64, 64);
@@ -53,6 +57,11 @@ public class Player extends Entity{
 		jumpingRight.addFrame(sh.getSprite(1, 0), 100);
 		jumpingLeft.addFrame(sh.getSprite(1, 0).getFlippedCopy(true, false),100);
 		
+		damageRight.addFrame(sh.getSprite(2, 0), 100);
+		damageRight.addFrame(sh.getSprite(3, 0), 100);
+		damageLeft.addFrame(sh.getSprite(2, 0).getFlippedCopy(true, false), 100);
+		damageLeft.addFrame(sh.getSprite(3, 0).getFlippedCopy(true, false), 100);
+		
 		anim = standingRight;
 		direction = "right";
 	}
@@ -76,6 +85,10 @@ public class Player extends Entity{
 			if(this.direction.equals("left")) anim = jumpingLeft;
 			else anim = jumpingRight;
 		}
+		if(damageStatus){
+			if(this.direction.equals("left")) anim = damageLeft;
+			else anim = damageRight;
+		}
 	}
 
 	@Override
@@ -91,13 +104,19 @@ public class Player extends Entity{
 		hitBox = new Rectangle(0,0,32,32);
 		hitBox.setLocation(x+20, y+17);
 		
-		footing = new Rectangle(0,0,32,2);
-		footing.setLocation(x+20, y+17+31);
+		footing = new Rectangle(0,0,32,1);
+		footing.setLocation(x+20, y+17+32);
 	}
 	public String getDirection(){
 		return direction;
 	}
+	public void damage(boolean damageStatus){
+		this.damageStatus = damageStatus;
+	}
 	public int animationNumber(){
 		return anim.getFrame();
+	}
+	public boolean getDamageStatus(){
+		return damageStatus;
 	}
 }

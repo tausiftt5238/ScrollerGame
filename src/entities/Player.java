@@ -9,10 +9,15 @@ import org.newdawn.slick.geom.Rectangle;
 public class Player extends Entity{
 	public static Player player = new Player(640/2,480/2);
 	
+	private boolean shooting;
+	
 	String direction;
 	Animation movingLeft, movingRight;
+	Animation shootingLeft, shootingRight;
 	Animation standingRight, standingLeft;
+	Animation standShootRight, standShootLeft;
 	Animation jumpingLeft, jumpingRight;
+	Animation jumpShootLeft, jumpShootRight;
 	Animation damageLeft, damageRight;
 		
 	public Player(float x, float y){		
@@ -20,14 +25,25 @@ public class Player extends Entity{
 		x = 640/2;
 		y = 480/2;
 		
+		shooting = false;
+		
 		movingLeft = new Animation(); movingLeft.setAutoUpdate(true);
 		movingRight = new Animation(); movingRight.setAutoUpdate(true);
+		
+		shootingLeft = new Animation(); shootingLeft.setAutoUpdate(true);
+		shootingRight = new Animation(); shootingRight.setAutoUpdate(true);
 		
 		standingLeft = new Animation();
 		standingRight = new Animation();
 		
+		standShootLeft = new Animation();
+		standShootRight = new Animation();
+		
 		jumpingLeft = new Animation();
 		jumpingRight = new Animation();
+		
+		jumpShootLeft = new Animation();
+		jumpShootRight = new Animation();
 		
 		damageLeft = new Animation(); damageLeft.setAutoUpdate(true);
 		damageRight = new Animation(); damageRight.setAutoUpdate(true);
@@ -46,16 +62,25 @@ public class Player extends Entity{
 	public void loadAnimation(){
 		int row = 1;
 		for(int col = 0 ; col < 10 ; col++){
-			if(row == 1){
-				movingRight.addFrame(sh.getSprite(col, row), 100);
-				movingLeft.addFrame(sh.getSprite(col, row).getFlippedCopy(true, false), 100);
-			}
+			
+			movingRight.addFrame(sh.getSprite(col, row), 100);
+			movingLeft.addFrame(sh.getSprite(col, row).getFlippedCopy(true, false), 100);
+			
+			shootingRight.addFrame(sh.getSprite(col, row+1), 100);
+			shootingLeft.addFrame(sh.getSprite(col, row+1).getFlippedCopy(true, false), 100);
+			
 		}
 		standingRight.addFrame(sh.getSprite(0, 0), 100);
 		standingLeft.addFrame(sh.getSprite(0, 0).getFlippedCopy(true, false),100);
 		
+		standShootRight.addFrame(sh.getSprite(4, 0), 100);
+		standShootLeft.addFrame(sh.getSprite(4, 0).getFlippedCopy(true, false),100);
+		
 		jumpingRight.addFrame(sh.getSprite(1, 0), 100);
 		jumpingLeft.addFrame(sh.getSprite(1, 0).getFlippedCopy(true, false),100);
+		
+		jumpShootRight.addFrame(sh.getSprite(5, 0), 100);
+		jumpShootLeft.addFrame(sh.getSprite(5, 0).getFlippedCopy(true, false),100);
 		
 		damageRight.addFrame(sh.getSprite(2, 0), 100);
 		damageRight.addFrame(sh.getSprite(3, 0), 100);
@@ -85,10 +110,24 @@ public class Player extends Entity{
 			if(this.direction.equals("left")) anim = jumpingLeft;
 			else anim = jumpingRight;
 		}
+		
+		if(shooting && falling){
+			if(this.direction.equals("left")) anim = jumpShootLeft;
+			else anim = jumpShootRight;
+		}
+		else if(shooting && direction.equals("standing")){
+			if(this.direction.equals("left")) anim = standShootLeft;
+			else anim = standShootRight;
+		}
+		else if(shooting){
+			if(this.direction.equals("left")) anim = shootingLeft;
+			else anim = shootingRight;
+		}
 		if(damageStatus){
 			if(this.direction.equals("left")) anim = damageLeft;
 			else anim = damageRight;
 		}
+		
 	}
 
 	@Override
@@ -118,5 +157,11 @@ public class Player extends Entity{
 	}
 	public boolean getDamageStatus(){
 		return damageStatus;
+	}
+	public void setShooting(boolean shooting){
+		this.shooting = shooting;
+	}
+	public boolean getShooting(){
+		return shooting;
 	}
 }

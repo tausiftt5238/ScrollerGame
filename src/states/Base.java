@@ -34,9 +34,11 @@ public class Base extends BasicGameState{
 	
 	private int jump;
 	private int damage;
+	private int shooting;
 	
 	private final int jumpLimit = 24;
 	private final int damageLengthLimit = 24;
+	private final int shootingLimit = 24;
 	
 	float speed = 0.3f;
 	
@@ -45,8 +47,8 @@ public class Base extends BasicGameState{
 	
 	public Base(int state, String map){
 		super();
-		x = -(20 << 6) + 640/2;
-		y = -(19 << 6) + 480/2;
+		x = -(0 << 6) + 640/2;
+		y = -(0 << 6) + 480/2;
 		this.state = state;
 		this.map = map;
 	}
@@ -77,6 +79,7 @@ public class Base extends BasicGameState{
 		g.drawString(x + " " + y, 500, 0);
 		g.drawString(jump + "", 500, 20);
 		g.drawString(Player.player.getFalling() + " ", 500, 40);
+		g.drawString(shooting + " ", 500, 60);
 		
 	}
 
@@ -108,9 +111,19 @@ public class Base extends BasicGameState{
 			jump = jumpLimit;
 			
 		}
+		if(input.isKeyPressed(Input.KEY_Z)
+				&& !Player.player.getDamageStatus() && shooting < 10){
+			shooting = shootingLimit;
+			Player.player.setShooting(true);
+		}
 		if(jump > 0){
 			jump--;
 			y += 10;
+		}
+		if(shooting > 0){
+			shooting--;
+		}else{
+			Player.player.setShooting(false);
 		}
 		if(damage > 0){
 			damage--;

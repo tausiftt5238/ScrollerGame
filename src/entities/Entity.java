@@ -1,5 +1,7 @@
 package entities;
 
+import java.util.LinkedList;
+
 import org.newdawn.slick.Animation;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
@@ -7,20 +9,23 @@ import org.newdawn.slick.SpriteSheet;
 import org.newdawn.slick.geom.Shape;
 
 public abstract class Entity {
-	
+	//Coordinate
 	protected float x;
 	protected float y;
 	
+	//Image
 	protected Animation anim;
 	protected Image sprite;
 	
+	//Collision detection 
 	protected Shape hitBox;
 	protected Shape footing;
+	
+	//State
 	protected boolean collide;
 	protected boolean falling;
 	protected boolean damageStatus;
 
-	
 	protected SpriteSheet sh;
 	
 	public Entity(float x, float y){
@@ -74,6 +79,7 @@ public abstract class Entity {
 	public void setFalling(boolean falling){
 		this.falling = falling;
 	}
+	public void gravityFall(LinkedList<Entity> e){}
 	public float getX(){ return x; }
 	public float getY(){ return y; }
 }

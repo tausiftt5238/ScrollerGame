@@ -1,5 +1,7 @@
 package entities.hostile;
 
+import java.util.LinkedList;
+
 import org.newdawn.slick.Animation;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.SlickException;
@@ -42,7 +44,9 @@ public class Enemy extends Entity{
 
 	@Override
 	public void update(float x, float y) {
+		if(falling)	this.y++;
 		hitBox.setLocation(this.x + x + 20, this.y + y + 17);
+		footing.setLocation(this.x + x + 20, this.y + y + 17 + 32);
 	}
 
 	@Override
@@ -54,11 +58,23 @@ public class Enemy extends Entity{
 	protected void setHitBox() {
 		hitBox = new Rectangle(0,0,32,32);
 		hitBox.setLocation(x+20, y+17);
+		
+		footing = new Rectangle(0,0,32,1);
+		footing.setLocation(x+20, y+17+32);
 	}
 
 	@Override
 	public void render(Graphics g) {
 		g.draw(hitBox);
+		g.draw(footing);
+		g.drawString(falling + " ", 500, 80);
 	}
-
+	
+	public void gravityFall(LinkedList<Entity> e){
+		boolean tempFall = false;
+		for(Entity z : e){
+			tempFall |= gravity(z);
+		}
+		this.setFalling(!tempFall);
+	}
 }

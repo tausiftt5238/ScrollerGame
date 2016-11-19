@@ -10,7 +10,6 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
-import org.newdawn.slick.SpriteSheet;
 import org.newdawn.slick.state.BasicGameState;
 import org.newdawn.slick.state.StateBasedGame;
 
@@ -18,10 +17,9 @@ import entities.Entity;
 import entities.Player;
 import entities.hostile.Enemy;
 import entities.inanimate.Inanimate;
+import entities.inanimate.InanimateFactory;
 
 public class Base extends BasicGameState{
-	
-	SpriteSheet terrain;
 	
 	BufferedImage terrainMap;
 	
@@ -45,6 +43,8 @@ public class Base extends BasicGameState{
 	LinkedList <Entity> entityList;
 	LinkedList <Entity> enemyList;
 	
+	InanimateFactory infac;
+	
 	public Base(int state, String map){
 		super();
 		x = -(0 << 6) + 640/2;
@@ -55,7 +55,7 @@ public class Base extends BasicGameState{
 	
 	@Override
 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
-		terrain = new SpriteSheet("Terrain.png",64,64);
+		infac = new InanimateFactory();		
 		
 		entityList = new LinkedList <Entity>();
 		enemyList = new LinkedList <Entity> ();
@@ -93,6 +93,7 @@ public class Base extends BasicGameState{
 
 		float tempX = x ;
 
+		//Input start
 		if(input.isKeyDown(Input.KEY_LEFT) && !Player.player.getDamageStatus()){
 			Player.player.update("left");
 			x += (int)change;
@@ -116,15 +117,22 @@ public class Base extends BasicGameState{
 			shooting = shootingLimit;
 			Player.player.setShooting(true);
 		}
+		//Input ends
+		
+		//Checking jump
 		if(jump > 0){
 			jump--;
 			y += 10;
 		}
+		
+		//Checking shooting
 		if(shooting > 0){
 			shooting--;
 		}else{
 			Player.player.setShooting(false);
 		}
+		
+		//Checking damage
 		if(damage > 0){
 			damage--;
 			if(Player.player.getDirection().equals("left")){
@@ -136,15 +144,18 @@ public class Base extends BasicGameState{
 			Player.player.damage(true);
 		} else Player.player.damage(false);
 		
+		//Collision checking start
 		for(Entity z : entityList) z.update(x, y);
 		for(Entity z: enemyList) z.update(x, y);
 		
+		//Collision with Non-hostile
 		for(Entity z: entityList){
 			if(z.collision(Player.player)){
 				x = tempX;
 				break;
 			}
 		}
+		//Collision with hostile
 		if(!Player.player.getDamageStatus())
 		for(Entity z: enemyList){
 			if(z.collision(Player.player)){
@@ -155,9 +166,17 @@ public class Base extends BasicGameState{
 		
 		for(Entity z : entityList) z.update(x, y);
 		for(Entity z : enemyList) z.update(x, y);
+		//Collision checking ends
 		
 	}
+	
 	private void gravity(){
+		//Drop the enemies
+		for(Entity z: enemyList){
+			z.gravityFall(entityList);
+		}
+		
+		//drop the player
 		boolean tempFall = false;
 		for(Entity z: entityList){
 			tempFall = tempFall | Player.player.gravity(z);
@@ -198,10 +217,9 @@ public class Base extends BasicGameState{
 		}
 		for(int i = 0 ; i < terrainMap.getWidth(); i++){
 			for(int j = 0 ; j < terrainMap.getHeight(); j++){
-				if(terrainMap.getRGB(i, j) == 0xFF3a4646){
-					Inanimate rock = new Inanimate((i<<6),(j<<6),terrain.getSprite(3, 3), true);
-					entityList.add(rock);
-				}
+				Inanimate inanim = infac.getInanimateObject(i, j, terrainMap.getRGB(i, j));
+				if(inanim != null)
+					entityList.add(inanim);
 			}
 		}
 	}

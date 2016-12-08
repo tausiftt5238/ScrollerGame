@@ -15,7 +15,7 @@ import org.newdawn.slick.state.StateBasedGame;
 
 import entities.Entity;
 import entities.Player;
-import entities.hostile.Enemy;
+import entities.hostile.DummyEnemy;
 import entities.inanimate.Inanimate;
 import entities.inanimate.InanimateFactory;
 
@@ -47,8 +47,8 @@ public class Base extends BasicGameState{
 	
 	public Base(int state, String map){
 		super();
-		x = -(0 << 6) + 640/2;
-		y = -(0 << 6) + 480/2;
+		x = -(21 << 6) + 640/2;
+		y = -(19 << 6) + 480/2;
 		this.state = state;
 		this.map = map;
 	}
@@ -60,7 +60,7 @@ public class Base extends BasicGameState{
 		entityList = new LinkedList <Entity>();
 		enemyList = new LinkedList <Entity> ();
 		
-		Enemy enemy = new Enemy((25 << 6), (19 << 6));
+		DummyEnemy enemy = new DummyEnemy((25 << 6), (15 << 6));
 		
 		enemyList.add(enemy);
 		
@@ -88,6 +88,10 @@ public class Base extends BasicGameState{
 		Input input = gc.getInput();
 		
 		gravity();
+		//Enemy on the move
+		for(Entity z: enemyList){
+			z.action(entityList);
+		}		
 		
 		float change = delta * speed;
 
@@ -119,10 +123,11 @@ public class Base extends BasicGameState{
 		}
 		//Input ends
 		
+		
 		//Checking jump
 		if(jump > 0){
 			jump--;
-			y += 10;
+			y += 12;
 		}
 		
 		//Checking shooting
@@ -173,7 +178,7 @@ public class Base extends BasicGameState{
 	private void gravity(){
 		//Drop the enemies
 		for(Entity z: enemyList){
-			z.gravityFall(entityList);
+			z.gravityFall(entityList, x , y);
 		}
 		
 		//drop the player
@@ -194,7 +199,8 @@ public class Base extends BasicGameState{
 				}
 				if(done) break;
 				y--;
-				for(Entity z: entityList) z.update(x, y);
+				for(Entity z : entityList) z.update(x, y);
+				for(Entity z : enemyList) z.update(x, y);
 			}
 		}
 		else if(!Player.player.getFalling()){

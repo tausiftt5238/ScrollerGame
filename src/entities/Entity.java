@@ -79,7 +79,9 @@ public abstract class Entity {
 	public void setFalling(boolean falling){
 		this.falling = falling;
 	}
-	public void gravityFall(LinkedList<Entity> e){}
+	public void updateHitBox(){	}
+	public void action(LinkedList<Entity> e){}
+	public void gravityFall(LinkedList<Entity> e, float x, float y){}
 	public float getX(){ return x; }
 	public float getY(){ return y; }
 }

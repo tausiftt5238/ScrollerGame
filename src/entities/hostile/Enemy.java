@@ -4,13 +4,13 @@ import java.util.LinkedList;
 
 import org.newdawn.slick.Animation;
 import org.newdawn.slick.Graphics;
-import org.newdawn.slick.SlickException;
-import org.newdawn.slick.SpriteSheet;
 import org.newdawn.slick.geom.Rectangle;
 
 import entities.Entity;
 
 public class Enemy extends Entity{
+	
+	int offsetX, offsetY;
 	
 	String direction;
 	
@@ -18,35 +18,12 @@ public class Enemy extends Entity{
 	
 	public Enemy(float x, float y) {
 		super(x, y);
-		
-		standingLeft = new Animation();
-		standingRight = new Animation();
-		
-		try{
-			sh = new SpriteSheet("enemy1.png",64, 64);
-		}catch(SlickException e){
-			e.printStackTrace();
-		}
-		
-		loadAnimation();
-		
-		setHitBox();
 	}
 	
-	public void loadAnimation(){
-		
-		standingRight.addFrame(sh.getSprite(0, 0), 100);
-		standingLeft.addFrame(sh.getSprite(0, 0).getFlippedCopy(true, false),100);
-		
-		anim = standingLeft;
-		direction = "left";
-	}
-
 	@Override
 	public void update(float x, float y) {
-		if(falling)	this.y++;
-		hitBox.setLocation(this.x + x + 20, this.y + y + 17);
-		footing.setLocation(this.x + x + 20, this.y + y + 17 + 32);
+		hitBox.setLocation(this.x + x + offsetX, this.y + y + offsetY);
+		footing.setLocation(this.x + x + offsetX, this.y + y + offsetY + 32);
 	}
 
 	@Override
@@ -57,10 +34,10 @@ public class Enemy extends Entity{
 	@Override
 	protected void setHitBox() {
 		hitBox = new Rectangle(0,0,32,32);
-		hitBox.setLocation(x+20, y+17);
+		hitBox.setLocation(x+offsetX, y+offsetY);
 		
 		footing = new Rectangle(0,0,32,1);
-		footing.setLocation(x+20, y+17+32);
+		footing.setLocation(x+offsetX, y+offsetY+32);
 	}
 
 	@Override
@@ -70,11 +47,30 @@ public class Enemy extends Entity{
 		g.drawString(falling + " ", 500, 80);
 	}
 	
-	public void gravityFall(LinkedList<Entity> e){
+	public void updateHitBox(){
+		hitBox.setLocation(this.x + offsetX, this.y + offsetY);
+		footing.setLocation(this.x + offsetX, this.y + offsetY + 32);
+	}
+	
+	public void gravityFall(LinkedList<Entity> e, float x, float y){
 		boolean tempFall = false;
-		for(Entity z : e){
-			tempFall |= gravity(z);
+		for(int i = 0 ; i < 8; i++){
+			tempFall = false;
+			for(Entity z : e){
+				tempFall |= gravity(z);
+				if(tempFall){
+					
+					break;
+				}
+			}
+			if(tempFall){
+				break;
+			}
+			this.y++;
+			update(x,y);
 		}
 		this.setFalling(!tempFall);
 	}
+	
+	public void loadAnimation(){}
 }

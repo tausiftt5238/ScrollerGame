@@ -10,11 +10,9 @@ import entities.Entity;
 
 public class Enemy extends Entity{
 	
-	int offsetX, offsetY;
+	protected int offsetX, offsetY;
 	
-	String direction;
-	
-	Animation standingRight, standingLeft;
+	protected Animation standingRight, standingLeft;
 	
 	public Enemy(float x, float y) {
 		super(x, y);

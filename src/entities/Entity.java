@@ -9,6 +9,9 @@ import org.newdawn.slick.SpriteSheet;
 import org.newdawn.slick.geom.Shape;
 
 public abstract class Entity {
+	
+	protected String direction;
+	
 	//Coordinate
 	protected float x;
 	protected float y;
@@ -79,6 +82,7 @@ public abstract class Entity {
 	public void setFalling(boolean falling){
 		this.falling = falling;
 	}
+	public boolean isAlive(){ return true; }
 	public void updateHitBox(){	}
 	public void action(LinkedList<Entity> e){}
 	public void gravityFall(LinkedList<Entity> e, float x, float y){}

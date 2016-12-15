@@ -18,6 +18,7 @@ import entities.Player;
 import entities.hostile.DummyEnemy;
 import entities.inanimate.Inanimate;
 import entities.inanimate.InanimateFactory;
+import entities.projectile.PlayerProjectile;
 
 public class Base extends BasicGameState{
 	
@@ -42,13 +43,14 @@ public class Base extends BasicGameState{
 	
 	LinkedList <Entity> entityList;
 	LinkedList <Entity> enemyList;
+	LinkedList <Entity> playerProjectileList;
 	
 	InanimateFactory infac;
 	
 	public Base(int state, String map){
 		super();
-		x = -(21 << 6) + 640/2;
-		y = -(19 << 6) + 480/2;
+		x = -(0 << 6) + 640/2;		//21
+		y = -(0 << 6) + 480/2;		//19
 		this.state = state;
 		this.map = map;
 	}
@@ -59,6 +61,7 @@ public class Base extends BasicGameState{
 		
 		entityList = new LinkedList <Entity>();
 		enemyList = new LinkedList <Entity> ();
+		playerProjectileList = new LinkedList <Entity> ();
 		
 		DummyEnemy enemy = new DummyEnemy((25 << 6), (15 << 6));
 		
@@ -69,6 +72,7 @@ public class Base extends BasicGameState{
 
 	@Override
 	public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
+		drawProjectile(g);
 		drawEntity(g);
 		drawEnemy(g);
 		
@@ -91,7 +95,12 @@ public class Base extends BasicGameState{
 		//Enemy on the move
 		for(Entity z: enemyList){
 			z.action(entityList);
-		}		
+		}
+		for(Entity z : playerProjectileList){
+			if(!z.isAlive()){
+				playerProjectileList.remove(z);
+			}
+		}
 		
 		float change = delta * speed;
 
@@ -119,6 +128,10 @@ public class Base extends BasicGameState{
 		if(input.isKeyPressed(Input.KEY_Z)
 				&& !Player.player.getDamageStatus() && shooting < 10){
 			shooting = shootingLimit;
+			if(Player.player.getDirection().equals("right"))
+				playerProjectileList.add(new PlayerProjectile(-x + 640/2 + 45,-y + 480/2 + 8,Player.player.getDirection()));
+			else
+				playerProjectileList.add(new PlayerProjectile(-x + 640/2 - 45,-y + 480/2 + 8,Player.player.getDirection()));
 			Player.player.setShooting(true);
 		}
 		//Input ends
@@ -152,6 +165,7 @@ public class Base extends BasicGameState{
 		//Collision checking start
 		for(Entity z : entityList) z.update(x, y);
 		for(Entity z: enemyList) z.update(x, y);
+		for(Entity z: playerProjectileList) z.update(x, y);
 		
 		//Collision with Non-hostile
 		for(Entity z: entityList){
@@ -171,6 +185,7 @@ public class Base extends BasicGameState{
 		
 		for(Entity z : entityList) z.update(x, y);
 		for(Entity z : enemyList) z.update(x, y);
+		for(Entity z : playerProjectileList) z.update(x, y);
 		//Collision checking ends
 		
 	}
@@ -237,6 +252,12 @@ public class Base extends BasicGameState{
 	}
 	private void drawEnemy(Graphics g){
 		for(Entity z: enemyList){
+			z.render(x,y);
+			z.render(g);
+		}
+	}
+	private void drawProjectile(Graphics g){
+		for(Entity z: playerProjectileList){
 			z.render(x,y);
 			z.render(g);
 		}

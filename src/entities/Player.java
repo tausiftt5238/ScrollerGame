@@ -11,14 +11,13 @@ public class Player extends Entity{
 	
 	private boolean shooting;
 	
-	String direction;
-	Animation movingLeft, movingRight;
-	Animation shootingLeft, shootingRight;
-	Animation standingRight, standingLeft;
-	Animation standShootRight, standShootLeft;
-	Animation jumpingLeft, jumpingRight;
-	Animation jumpShootLeft, jumpShootRight;
-	Animation damageLeft, damageRight;
+	private Animation movingLeft, movingRight;
+	private Animation shootingLeft, shootingRight;
+	private Animation standingRight, standingLeft;
+	private Animation standShootRight, standShootLeft;
+	private Animation jumpingLeft, jumpingRight;
+	private Animation jumpShootLeft, jumpShootRight;
+	private Animation damageLeft, damageRight;
 		
 	public Player(float x, float y){		
 		super(x,y);
@@ -26,6 +25,7 @@ public class Player extends Entity{
 		y = 480/2;
 		
 		shooting = false;
+		
 		
 		movingLeft = new Animation(); movingLeft.setAutoUpdate(true);
 		movingRight = new Animation(); movingRight.setAutoUpdate(true);

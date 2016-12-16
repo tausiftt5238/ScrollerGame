@@ -2,12 +2,14 @@ package states;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 import javax.imageio.ImageIO;
 
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.state.BasicGameState;
@@ -18,6 +20,7 @@ import entities.Player;
 import entities.hostile.DummyEnemy;
 import entities.inanimate.Inanimate;
 import entities.inanimate.InanimateFactory;
+import entities.projectile.Patronous;
 import entities.projectile.PlayerProjectile;
 
 public class Base extends BasicGameState{
@@ -34,10 +37,14 @@ public class Base extends BasicGameState{
 	private int jump;
 	private int damage;
 	private int shooting;
+	private int patronum;
 	
 	private final int jumpLimit = 24;
 	private final int damageLengthLimit = 24;
 	private final int shootingLimit = 24;
+	private final int patronumLimit = 100;
+	
+	private Image background;
 	
 	float speed = 0.3f;
 	
@@ -53,6 +60,7 @@ public class Base extends BasicGameState{
 		y = -(0 << 6) + 480/2;		//19
 		this.state = state;
 		this.map = map;
+		
 	}
 	
 	@Override
@@ -68,16 +76,24 @@ public class Base extends BasicGameState{
 		enemyList.add(enemy);
 		
 		loadTerrain();
+		
+		try{
+			background = new Image("background.png");
+		}catch(SlickException e){
+			System.out.println("didn't work out");
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
+		background.draw(0,0);
 		drawProjectile(g);
 		drawEntity(g);
 		drawEnemy(g);
 		
 		Player.player.render(x, y);
-		Player.player.render(g);
+		//Player.player.render(g);
 		
 		g.drawString(Player.player.animationNumber() + " ", 500, 400);
 		g.drawString(x + " " + y, 500, 0);
@@ -93,14 +109,10 @@ public class Base extends BasicGameState{
 		
 		gravity();
 		//Enemy on the move
-		for(Entity z: enemyList){
-			z.action(entityList);
-		}
-		for(Entity z : playerProjectileList){
-			if(!z.isAlive()){
-				playerProjectileList.remove(z);
-			}
-		}
+		/*for(Entity z: enemyList){
+			z.action(entityList, (int)(delta * speed));
+		}*/
+		enemyCheck(delta);
 		
 		float change = delta * speed;
 
@@ -126,13 +138,25 @@ public class Base extends BasicGameState{
 			
 		}
 		if(input.isKeyPressed(Input.KEY_Z)
-				&& !Player.player.getDamageStatus() && shooting < 10){
+				&& !Player.player.getDamageStatus() && shooting < 5){
 			shooting = shootingLimit;
 			if(Player.player.getDirection().equals("right"))
 				playerProjectileList.add(new PlayerProjectile(-x + 640/2 + 45,-y + 480/2 + 8,Player.player.getDirection()));
 			else
 				playerProjectileList.add(new PlayerProjectile(-x + 640/2 - 45,-y + 480/2 + 8,Player.player.getDirection()));
 			Player.player.setShooting(true);
+		}
+		
+		if(input.isKeyPressed(Input.KEY_C)
+				&& !Player.player.getDamageStatus() && shooting < 10 && patronum <= 0){
+			shooting = shootingLimit;
+			if(Player.player.getDirection().equals("right"))
+				playerProjectileList.add(new Patronous(-x + 640/2 + 60,-y + 480/2 + 8,Player.player.getDirection()));
+			else
+				playerProjectileList.add(new Patronous(-x + 640/2 - 90,-y + 480/2 + 8,Player.player.getDirection()));
+			Player.player.setShooting(true);
+			patronum = patronumLimit;
+			
 		}
 		//Input ends
 		
@@ -150,14 +174,15 @@ public class Base extends BasicGameState{
 			Player.player.setShooting(false);
 		}
 		
+		if(patronum > 0) patronum--;
 		//Checking damage
 		if(damage > 0){
 			damage--;
 			if(Player.player.getDirection().equals("left")){
-				x -= (int) change;
+				x -= (int) change/2;
 			}
 			else if(Player.player.getDirection().equals("right")){
-				x += (int) change;
+				x += (int) change/2;
 			}
 			Player.player.damage(true);
 		} else Player.player.damage(false);
@@ -177,7 +202,7 @@ public class Base extends BasicGameState{
 		//Collision with hostile
 		if(!Player.player.getDamageStatus())
 		for(Entity z: enemyList){
-			if(z.collision(Player.player)){
+			if(z.collision(Player.player) && !z.damageStatus()){
 				damage = damageLengthLimit;
 				break;
 			}
@@ -188,6 +213,32 @@ public class Base extends BasicGameState{
 		for(Entity z : playerProjectileList) z.update(x, y);
 		//Collision checking ends
 		
+		//Check if projectile is done
+		projectileCheck(delta);
+				
+		
+	}
+	
+	private void enemyCheck(int delta){
+		Iterator<Entity> it = enemyList.iterator();
+		while(it.hasNext()){
+			Entity p = it.next();
+			if(!p.isAlive()){
+				it.remove();
+			}
+			p.action(entityList, (int)(delta * speed));
+		}
+	}
+	
+	private void projectileCheck(int delta){
+		Iterator<Entity> it = playerProjectileList.iterator();
+		while(it.hasNext()){
+			Entity p = it.next();
+			if(!p.isAlive()){
+				it.remove();
+			}
+			p.action(enemyList, (int)(2*delta*speed));
+		}
 	}
 	
 	private void gravity(){
@@ -247,19 +298,19 @@ public class Base extends BasicGameState{
 	private void drawEntity(Graphics g){
 		for(Entity z : entityList){
 			z.render(x, y);
-			z.render(g);
+			//z.render(g);
 		}
 	}
 	private void drawEnemy(Graphics g){
 		for(Entity z: enemyList){
 			z.render(x,y);
-			z.render(g);
+			//z.render(g);
 		}
 	}
 	private void drawProjectile(Graphics g){
 		for(Entity z: playerProjectileList){
 			z.render(x,y);
-			z.render(g);
+			//z.render(g);
 		}
 	}
 

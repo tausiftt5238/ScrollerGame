@@ -12,7 +12,10 @@ public class Enemy extends Entity{
 	
 	protected int offsetX, offsetY;
 	
-	protected Animation standingRight, standingLeft;
+	protected Animation movingRight, movingLeft;
+	protected Animation damageLeft, damageRight;
+	
+	int damaging;
 	
 	public Enemy(float x, float y) {
 		super(x, y);

@@ -63,9 +63,7 @@ public abstract class Entity {
 		return hitBox;
 	}
 	public boolean collision(Entity ob){
-		if(collide)
-			return hitBox.intersects(ob.getHitBox());
-		else return false;
+		return hitBox.intersects(ob.getHitBox());
 	}
 	public void getSpriteSheet(SpriteSheet sh){
 		this.sh = sh;
@@ -84,8 +82,10 @@ public abstract class Entity {
 	}
 	public boolean isAlive(){ return true; }
 	public void updateHitBox(){	}
-	public void action(LinkedList<Entity> e){}
+	public void action(LinkedList<Entity> e, int delta){}
 	public void gravityFall(LinkedList<Entity> e, float x, float y){}
 	public float getX(){ return x; }
 	public float getY(){ return y; }
+	public void damage(int damageLimit){}
+	public boolean damageStatus(){return false;}
 }

@@ -34,7 +34,7 @@ public class PlayerProjectile extends Entity{
 
 	@Override
 	public void update(float x, float y) {
-		hitBox.setLocation(this.x + x, this.y + y);
+		hitBox.setLocation(this.x + x + 5, this.y + y + 5);
 	}
 
 	@Override
@@ -44,7 +44,7 @@ public class PlayerProjectile extends Entity{
 
 	@Override
 	protected void setHitBox() {
-		hitBox = new Rectangle(0,0,64,64);
+		hitBox = new Rectangle(0,0,50,32);
 		hitBox.setLocation(x,y);		
 	}
 
@@ -76,6 +76,11 @@ public class PlayerProjectile extends Entity{
 			updateHitBox();
 		}
 		
+	}
+	
+	@Override
+	public void damage(int damageLimit){
+		alive = 0;
 	}
 	
 	@Override

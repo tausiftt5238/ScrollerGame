@@ -7,10 +7,12 @@ import org.newdawn.slick.SlickException;
 import org.newdawn.slick.SpriteSheet;
 
 import entities.Entity;
+import entities.projectile.EnemyProjectile;
 
 public class DummyEnemy extends Enemy{
 	
 	int health = 3;
+	int shooting = 0;
 	
 	public DummyEnemy(float x, float y) {
 		super(x, y);
@@ -64,22 +66,31 @@ public class DummyEnemy extends Enemy{
 		}
 	}
 	
-	public void action(LinkedList<Entity> e, int delta){
+	public void action(LinkedList<Entity> e, LinkedList<Entity> f, int delta){
+		if(shooting > 0 && !damageStatus)
+			shooting--;
 		if(damaging > 0){
 			damaging--;
 			damageStatus = true;
 		} else damageStatus = false;
+		
+		if(shooting == 0 && !damageStatus){
+			shooting = 48;
+			if(direction.equals("left"))
+				f.add(new EnemyProjectile(x - 32,y + offsetY - 10,direction));
+			else f.add(new EnemyProjectile(x + 32, y + offsetY - 10, direction));
+		}
 			
 		boolean collision = false;
 		for(Entity x : e){
 			if(x.collision(this)){
 				collision = true;
 				if(direction.equals("left")){
-					this.x += delta;
+					this.x += (delta + 5);
 					direction = "right";
 				}
 				else{
-					this.x -= delta;
+					this.x -= (delta + 5);
 					direction = "left";
 				}
 				break;

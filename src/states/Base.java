@@ -22,6 +22,7 @@ import entities.inanimate.Inanimate;
 import entities.inanimate.InanimateFactory;
 import entities.projectile.Patronous;
 import entities.projectile.PlayerProjectile;
+import entities.sfx.SFXFactory;
 
 public class Base extends BasicGameState{
 	
@@ -51,13 +52,16 @@ public class Base extends BasicGameState{
 	LinkedList <Entity> entityList;
 	LinkedList <Entity> enemyList;
 	LinkedList <Entity> playerProjectileList;
+	LinkedList <Entity> enemyProjectileList;
+	LinkedList <Entity> sfxList;
 	
 	InanimateFactory infac;
+	SFXFactory sfxfac;
 	
 	public Base(int state, String map){
 		super();
-		x = -(0 << 6) + 640/2;		//21
-		y = -(0 << 6) + 480/2;		//19
+		x = -(21 << 6) + 640/2;		//21
+		y = -(19 << 6) + 480/2;		//19
 		this.state = state;
 		this.map = map;
 		
@@ -65,11 +69,14 @@ public class Base extends BasicGameState{
 	
 	@Override
 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
-		infac = new InanimateFactory();		
+		infac = new InanimateFactory();
+		sfxfac = new SFXFactory();
 		
 		entityList = new LinkedList <Entity>();
 		enemyList = new LinkedList <Entity> ();
 		playerProjectileList = new LinkedList <Entity> ();
+		enemyProjectileList = new LinkedList <Entity> ();
+		sfxList = new LinkedList <Entity> ();
 		
 		DummyEnemy enemy = new DummyEnemy((25 << 6), (15 << 6));
 		
@@ -109,9 +116,7 @@ public class Base extends BasicGameState{
 		
 		gravity();
 		//Enemy on the move
-		/*for(Entity z: enemyList){
-			z.action(entityList, (int)(delta * speed));
-		}*/
+		
 		enemyCheck(delta);
 		
 		float change = delta * speed;
@@ -138,7 +143,7 @@ public class Base extends BasicGameState{
 			
 		}
 		if(input.isKeyPressed(Input.KEY_Z)
-				&& !Player.player.getDamageStatus() && shooting < 5){
+				&& !Player.player.getDamageStatus() && shooting < 10){
 			shooting = shootingLimit;
 			if(Player.player.getDirection().equals("right"))
 				playerProjectileList.add(new PlayerProjectile(-x + 640/2 + 45,-y + 480/2 + 8,Player.player.getDirection()));
@@ -188,9 +193,7 @@ public class Base extends BasicGameState{
 		} else Player.player.damage(false);
 		
 		//Collision checking start
-		for(Entity z : entityList) z.update(x, y);
-		for(Entity z: enemyList) z.update(x, y);
-		for(Entity z: playerProjectileList) z.update(x, y);
+		updateEntities();
 		
 		//Collision with Non-hostile
 		for(Entity z: entityList){
@@ -208,9 +211,16 @@ public class Base extends BasicGameState{
 			}
 		}
 		
-		for(Entity z : entityList) z.update(x, y);
-		for(Entity z : enemyList) z.update(x, y);
-		for(Entity z : playerProjectileList) z.update(x, y);
+		for(Entity z: enemyProjectileList){
+			if(z.collision(Player.player) && !z.damageStatus()){
+				damage = damageLengthLimit;
+				z.damage(0);
+				break;
+			}
+		}
+		
+		updateEntities();
+		
 		//Collision checking ends
 		
 		//Check if projectile is done
@@ -226,8 +236,10 @@ public class Base extends BasicGameState{
 			if(!p.isAlive()){
 				it.remove();
 			}
-			p.action(entityList, (int)(delta * speed));
+			p.action(entityList, enemyProjectileList, (int)(delta * speed));
 		}
+		
+		
 	}
 	
 	private void projectileCheck(int delta){
@@ -235,9 +247,30 @@ public class Base extends BasicGameState{
 		while(it.hasNext()){
 			Entity p = it.next();
 			if(!p.isAlive()){
+				if(!p.toString().equals("patronus"))
+				sfxList.add(sfxfac.getSFX((int)p.getX(), (int)p.getY() - 10, "particle", "blue"));
 				it.remove();
 			}
 			p.action(enemyList, (int)(2*delta*speed));
+		}
+		
+		it = enemyProjectileList.iterator();
+		while(it.hasNext()){
+			Entity p = it.next();
+			if(!p.isAlive()){
+				sfxList.add(sfxfac.getSFX((int)p.getX(), (int)p.getY()- 10, "particle", "green"));
+				it.remove();
+			}
+			p.action(playerProjectileList,(int)(2 * delta * speed));
+		}
+		
+		it = sfxList.iterator();
+		while(it.hasNext()){
+			Entity p = it.next();
+			if(!p.isAlive()){
+				it.remove();
+			}
+			p.action(playerProjectileList,(int)(2 * delta * speed));
 		}
 	}
 	
@@ -265,8 +298,7 @@ public class Base extends BasicGameState{
 				}
 				if(done) break;
 				y--;
-				for(Entity z : entityList) z.update(x, y);
-				for(Entity z : enemyList) z.update(x, y);
+				updateEntities();
 			}
 		}
 		else if(!Player.player.getFalling()){
@@ -275,12 +307,6 @@ public class Base extends BasicGameState{
 		
 	}
 
-	@Override
-	public int getID() {
-		
-		return state;
-	}
-	
 	private void loadTerrain(){
 		try {
 			terrainMap = ImageIO.read(getClass().getResourceAsStream(map));
@@ -312,6 +338,28 @@ public class Base extends BasicGameState{
 			z.render(x,y);
 			//z.render(g);
 		}
+		
+		for(Entity z: enemyProjectileList){
+			z.render(x,y);
+			//z.render(g);
+		}
+		
+		for(Entity z: sfxList){
+			z.render(x,y);
+		}
 	}
-
+	private void updateEntities(){
+		for(Entity z : entityList) z.update(x, y);
+		for(Entity z : enemyList) z.update(x, y);
+		for(Entity z : playerProjectileList) z.update(x, y);
+		for(Entity z : enemyProjectileList) z.update(x, y);
+		for(Entity z : sfxList) z.update(x, y);
+	}
+	
+	@Override
+	public int getID() {
+		
+		return state;
+	}
+	
 }

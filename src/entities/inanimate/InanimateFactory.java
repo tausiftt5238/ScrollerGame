@@ -19,7 +19,7 @@ public class InanimateFactory {
 	
 	public Inanimate getInanimateObject(int co_x, int co_y, int color){
 		if(color == 0xFF3a4646)
-			return new Inanimate((co_x<<6),(co_y<<6),terrain.getSprite(1, 1), true);
+			return new Inanimate((co_x<<6),(co_y<<6),terrain.getSprite(2, 1), true);
 		
 		return null;
 	}

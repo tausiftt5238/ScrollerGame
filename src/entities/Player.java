@@ -49,7 +49,7 @@ public class Player extends Entity{
 		damageRight = new Animation(); damageRight.setAutoUpdate(true);
 		
 		try{
-			sh = new SpriteSheet("megaman.png",64, 64);
+			sh = new SpriteSheet("maliha.png",64, 64);
 		}catch(SlickException e){
 			e.printStackTrace();
 		}

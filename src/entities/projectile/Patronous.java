@@ -18,14 +18,14 @@ public class Patronous extends PlayerProjectile{
 		}catch(SlickException e){
 			e.printStackTrace();
 		}
-		speed = 4;
-		alive = (speed << 4);
+		
+		alive = 100;
 		loadSprite();
 	}
 	@Override
 	protected void loadSprite(){
 		anim = new Animation(); anim.setAutoUpdate(true);
-		for(int i = 0 ; i < 3 ; i++){
+		for(int i = 0 ; i < 5 ; i++){
 			if(direction.equals("right")) anim.addFrame(sh.getSprite(i, 1), 150);
 			else anim.addFrame(sh.getSprite(i, 1).getFlippedCopy(true, false), 150);
 		}
@@ -40,7 +40,12 @@ public class Patronous extends PlayerProjectile{
 		anim.draw(this.x + x , this.y + y);	
 	}
 	public void action(LinkedList<Entity> e, int delta){
-		if(direction.equals("left")) this.x -= delta;
-		else this.x += delta;
+		if(direction.equals("left")) this.x -= delta/2;
+		else this.x += delta/2;
+	}
+	
+	@Override
+	public String toString(){
+		return "patronus";
 	}
 }

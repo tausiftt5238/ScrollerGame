@@ -83,6 +83,7 @@ public abstract class Entity {
 	public boolean isAlive(){ return true; }
 	public void updateHitBox(){	}
 	public void action(LinkedList<Entity> e, int delta){}
+	public void action(LinkedList<Entity> e, LinkedList<Entity> f, int delta){}
 	public void gravityFall(LinkedList<Entity> e, float x, float y){}
 	public float getX(){ return x; }
 	public float getY(){ return y; }

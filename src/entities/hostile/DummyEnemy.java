@@ -3,7 +3,6 @@ package entities.hostile;
 import java.util.LinkedList;
 
 import org.newdawn.slick.Animation;
-import org.newdawn.slick.SlickException;
 import org.newdawn.slick.SpriteSheet;
 
 import entities.Entity;
@@ -13,9 +12,13 @@ public class DummyEnemy extends Enemy{
 	
 	int health = 3;
 	int shooting = 0;
+	boolean standing ;
 	
-	public DummyEnemy(float x, float y) {
+	public DummyEnemy(float x, float y, boolean standing, SpriteSheet sh) {
 		super(x, y);
+		
+		this.standing = standing;
+		this.sh = sh;
 		
 		movingLeft = new Animation(); movingLeft.setAutoUpdate(true);
 		movingRight = new Animation(); movingRight.setAutoUpdate(true);
@@ -26,24 +29,25 @@ public class DummyEnemy extends Enemy{
 		offsetX = 20;
 		offsetY = 17;
 		
-		try{
-			sh = new SpriteSheet("enemy1.png",64, 64);
-		}catch(SlickException e){
-			e.printStackTrace();
-		}
-		
 		loadAnimation();
 		
 		setHitBox();
 	}
 	@Override
 	public void loadAnimation(){
-
-		int row = 1;
-		for(int col = 0 ; col < 10 ; col++){
-			
-			movingRight.addFrame(sh.getSprite(col, row), 100);
-			movingLeft.addFrame(sh.getSprite(col, row).getFlippedCopy(true, false), 100);
+		if(standing){
+			movingRight.addFrame(sh.getSprite(4, 0), 400);
+			movingRight.addFrame(sh.getSprite(0, 0), 400);
+			movingLeft.addFrame(sh.getSprite(4, 0).getFlippedCopy(true, false), 400);
+			movingLeft.addFrame(sh.getSprite(0, 0).getFlippedCopy(true, false), 400);
+		}
+		else{	
+			int row = 1;
+			for(int col = 0 ; col < 10 ; col++){
+				
+				movingRight.addFrame(sh.getSprite(col, row), 100);
+				movingLeft.addFrame(sh.getSprite(col, row).getFlippedCopy(true, false), 100);
+			}
 		}
 		
 		damageRight.addFrame(sh.getSprite(2, 0), 100);
@@ -98,7 +102,7 @@ public class DummyEnemy extends Enemy{
 		}
 		updateHitBox();
 				
-		if(!collision && !falling && !damageStatus){
+		if(!collision && !falling && !damageStatus && !standing){
 			if(direction.equals("left"))
 				x -= delta;
 			else x += delta;

@@ -17,7 +17,8 @@ import org.newdawn.slick.state.StateBasedGame;
 
 import entities.Entity;
 import entities.Player;
-import entities.hostile.DummyEnemy;
+import entities.hostile.Enemy;
+import entities.hostile.EnemyFactory;
 import entities.inanimate.Inanimate;
 import entities.inanimate.InanimateFactory;
 import entities.projectile.Patronous;
@@ -57,11 +58,12 @@ public class Base extends BasicGameState{
 	
 	InanimateFactory infac;
 	SFXFactory sfxfac;
+	EnemyFactory enemyfac;
 	
 	public Base(int state, String map){
 		super();
-		x = -(21 << 6) + 640/2;		//21
-		y = -(19 << 6) + 480/2;		//19
+		x = -(10 << 6) + 640/2;		//21
+		y = -(18 << 6) + 480/2;		//19
 		this.state = state;
 		this.map = map;
 		
@@ -71,6 +73,7 @@ public class Base extends BasicGameState{
 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
 		infac = new InanimateFactory();
 		sfxfac = new SFXFactory();
+		enemyfac = new EnemyFactory();
 		
 		entityList = new LinkedList <Entity>();
 		enemyList = new LinkedList <Entity> ();
@@ -78,11 +81,11 @@ public class Base extends BasicGameState{
 		enemyProjectileList = new LinkedList <Entity> ();
 		sfxList = new LinkedList <Entity> ();
 		
-		DummyEnemy enemy = new DummyEnemy((25 << 6), (15 << 6));
+		//DummyEnemy enemy = new DummyEnemy((25 << 6), (15 << 6), true);
 		
-		enemyList.add(enemy);
+		//enemyList.add(enemy);
 		
-		loadTerrain();
+		loadEntity();
 		
 		try{
 			background = new Image("background.png");
@@ -234,6 +237,7 @@ public class Base extends BasicGameState{
 		while(it.hasNext()){
 			Entity p = it.next();
 			if(!p.isAlive()){
+				sfxList.add(sfxfac.getSFX((int) p.getX(), (int) p.getY(), "apparate", "green"));
 				it.remove();
 			}
 			p.action(entityList, enemyProjectileList, (int)(delta * speed));
@@ -246,9 +250,10 @@ public class Base extends BasicGameState{
 		Iterator<Entity> it = playerProjectileList.iterator();
 		while(it.hasNext()){
 			Entity p = it.next();
+			
 			if(!p.isAlive()){
 				if(!p.toString().equals("patronus"))
-				sfxList.add(sfxfac.getSFX((int)p.getX(), (int)p.getY() - 10, "particle", "blue"));
+					sfxList.add(sfxfac.getSFX((int)p.getX(), (int)p.getY() - 10, "particle", "blue"));
 				it.remove();
 			}
 			p.action(enemyList, (int)(2*delta*speed));
@@ -307,7 +312,7 @@ public class Base extends BasicGameState{
 		
 	}
 
-	private void loadTerrain(){
+	private void loadEntity(){
 		try {
 			terrainMap = ImageIO.read(getClass().getResourceAsStream(map));
 		} catch (IOException e) {
@@ -318,6 +323,9 @@ public class Base extends BasicGameState{
 				Inanimate inanim = infac.getInanimateObject(i, j, terrainMap.getRGB(i, j));
 				if(inanim != null)
 					entityList.add(inanim);
+				Enemy enemy = enemyfac.getEnemy(i, j, terrainMap.getRGB(i, j));
+				if(enemy != null)
+					enemyList.add(enemy);
 			}
 		}
 	}

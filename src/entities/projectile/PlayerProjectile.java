@@ -67,7 +67,10 @@ public class PlayerProjectile extends Entity{
 		for(int i = 0 ; i < delta ; i++){
 			for(Entity z : e){
 				if(z.collision(this) && !z.damageStatus()){
-					z.damage(48);
+					if(!z.toString().equals("dementor"))
+						z.damage(48);
+					else
+						z.damage(10);
 					this.alive = 0;
 				}
 			}

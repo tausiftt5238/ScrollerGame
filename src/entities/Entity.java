@@ -63,7 +63,9 @@ public abstract class Entity {
 		return hitBox;
 	}
 	public boolean collision(Entity ob){
-		return hitBox.intersects(ob.getHitBox());
+		if(this.collide && ob.collide)
+			return hitBox.intersects(ob.getHitBox());
+		else return false;
 	}
 	public void getSpriteSheet(SpriteSheet sh){
 		this.sh = sh;
@@ -72,7 +74,9 @@ public abstract class Entity {
 		this.sprite = sprite;
 	}
 	public boolean gravity(Entity ob){
-		return footing.intersects(ob.getHitBox());
+		if(ob.collide)
+			return footing.intersects(ob.getHitBox());
+		else return false;
 	}
 	public boolean getFalling(){
 		return falling;
@@ -84,6 +88,7 @@ public abstract class Entity {
 	public void updateHitBox(){	}
 	public void action(LinkedList<Entity> e, int delta){}
 	public void action(LinkedList<Entity> e, LinkedList<Entity> f, int delta){}
+	public void action(float x , float y, int delta){}
 	public void gravityFall(LinkedList<Entity> e, float x, float y){}
 	public float getX(){ return x; }
 	public float getY(){ return y; }

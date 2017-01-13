@@ -6,9 +6,12 @@ import org.newdawn.slick.SlickException;
 import org.newdawn.slick.SpriteSheet;
 import org.newdawn.slick.geom.Rectangle;
 
+import mainGame.Main;
+
 public class Player extends Entity{
-	public static Player player = new Player(640/2,480/2);
+	public static Player player = new Player(Main.width/2,Main.height/2);
 	
+	private int health = 5;
 	private boolean shooting;
 	
 	private Animation movingLeft, movingRight;
@@ -21,8 +24,9 @@ public class Player extends Entity{
 		
 	public Player(float x, float y){		
 		super(x,y);
-		x = 640/2;
-		y = 480/2;
+		x = Main.width/2;
+		y = Main.height/2;
+		
 		
 		shooting = false;
 		
@@ -49,7 +53,7 @@ public class Player extends Entity{
 		damageRight = new Animation(); damageRight.setAutoUpdate(true);
 		
 		try{
-			sh = new SpriteSheet("maliha.png",64, 64);
+			sh = new SpriteSheet("megaman.png",64, 64);
 		}catch(SlickException e){
 			e.printStackTrace();
 		}
@@ -87,7 +91,7 @@ public class Player extends Entity{
 		damageLeft.addFrame(sh.getSprite(2, 0).getFlippedCopy(true, false), 100);
 		damageLeft.addFrame(sh.getSprite(3, 0).getFlippedCopy(true, false), 100);
 		
-		anim = standingRight;
+		anim = jumpingRight;
 		direction = "right";
 	}
 	
@@ -152,6 +156,9 @@ public class Player extends Entity{
 	public void damage(boolean damageStatus){
 		this.damageStatus = damageStatus;
 	}
+	public void healthDeplete(){
+		health--;
+	}
 	public int animationNumber(){
 		return anim.getFrame();
 	}
@@ -163,5 +170,14 @@ public class Player extends Entity{
 	}
 	public boolean getShooting(){
 		return shooting;
+	}
+	public int getHealth(){
+		return health;
+	}
+	public void restoreHealth(int health){
+		damageStatus = false;
+		anim = jumpingRight;
+		direction = "right";
+		this.health = health;
 	}
 }

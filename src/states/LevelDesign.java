@@ -7,25 +7,31 @@ import java.util.LinkedList;
 
 import javax.imageio.ImageIO;
 
+import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
+import org.newdawn.slick.Music;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.SpriteSheet;
+import org.newdawn.slick.geom.Rectangle;
+import org.newdawn.slick.geom.Shape;
 import org.newdawn.slick.state.BasicGameState;
 import org.newdawn.slick.state.StateBasedGame;
+import org.newdawn.slick.state.transition.FadeInTransition;
+import org.newdawn.slick.state.transition.FadeOutTransition;
 
 import entities.Entity;
 import entities.Player;
 import entities.hostile.Enemy;
 import entities.hostile.EnemyFactory;
-import entities.inanimate.Inanimate;
 import entities.inanimate.InanimateFactory;
-import entities.projectile.Patronous;
 import entities.projectile.PlayerProjectile;
 import entities.sfx.SFXFactory;
+import mainGame.Main;
 
-public class Base extends BasicGameState{
+public class LevelDesign extends BasicGameState{
 	
 	BufferedImage terrainMap;
 	
@@ -35,18 +41,19 @@ public class Base extends BasicGameState{
 	protected float y;
 	
 	private String map;
+	private String backgroundPath;
 	
 	private int jump;
 	private int damage;
 	private int shooting;
-	private int patronum;
 	
 	private final int jumpLimit = 24;
 	private final int damageLengthLimit = 24;
 	private final int shootingLimit = 24;
-	private final int patronumLimit = 100;
 	
 	private Image background;
+	
+	Music msk;
 	
 	float speed = 0.3f;
 	
@@ -60,17 +67,30 @@ public class Base extends BasicGameState{
 	SFXFactory sfxfac;
 	EnemyFactory enemyfac;
 	
-	public Base(int state, String map){
+	Image heart;
+	
+	
+	Shape nextStage;
+	
+	public LevelDesign(int state, String map, String backgroundPath){
 		super();
-		x = -(10 << 6) + 640/2;		//21
-		y = -(18 << 6) + 480/2;		//19
+		
 		this.state = state;
 		this.map = map;
+		this.backgroundPath = backgroundPath;
+		
+		nextStage = new Rectangle(0,0,64,64);
 		
 	}
 	
 	@Override
 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
+		Player.player.restoreHealth(5);
+		damage = 0;
+		
+		x = -(10 << 6) + Main.width/2;		//10
+		y = -(18 << 6) + Main.height/2;		//18
+		
 		infac = new InanimateFactory();
 		sfxfac = new SFXFactory();
 		enemyfac = new EnemyFactory();
@@ -81,46 +101,67 @@ public class Base extends BasicGameState{
 		enemyProjectileList = new LinkedList <Entity> ();
 		sfxList = new LinkedList <Entity> ();
 		
-		//DummyEnemy enemy = new DummyEnemy((25 << 6), (15 << 6), true);
-		
-		//enemyList.add(enemy);
+		msk = new Music("megaman2title.ogg");
+		//msk.play();
 		
 		loadEntity();
 		
+		SpriteSheet sh = null;
 		try{
-			background = new Image("background.png");
+			background = new Image(backgroundPath);
+			sh = new SpriteSheet("projectiles.png",64,64);
 		}catch(SlickException e){
 			System.out.println("didn't work out");
 			e.printStackTrace();
+		}catch(Exception e){
+			System.out.println(e);
 		}
+		heart = sh.getSprite(4, 0);
 	}
 
 	@Override
 	public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
-		background.draw(0,0);
-		drawProjectile(g);
+		if(background != null) background.draw(0,0);
 		drawEntity(g);
+		drawProjectile(g);
 		drawEnemy(g);
 		
 		Player.player.render(x, y);
+		
+		for(int i = 0 ; i < Player.player.getHealth(); i++){
+			heart.draw((i<<5),0,0.5f);
+		}
+		
+		
 		//Player.player.render(g);
 		
-		g.drawString(Player.player.animationNumber() + " ", 500, 400);
+		/*g.drawString(Player.player.animationNumber() + " ", 500, 400);
 		g.drawString(x + " " + y, 500, 0);
 		g.drawString(jump + "", 500, 20);
 		g.drawString(Player.player.getFalling() + " ", 500, 40);
-		g.drawString(shooting + " ", 500, 60);
+		g.drawString(shooting + " ", 500, 60);*/
 		
 	}
 
 	@Override
 	public void update(GameContainer gc, StateBasedGame sbg, int delta) throws SlickException {
+		if(!msk.playing()) msk.loop();
+		if(Player.player.getHealth() <= 0) {
+			msk.stop();
+			sbg.enterState(Main.gameOver ,  new FadeOutTransition(Color.black), new FadeInTransition(Color.black));
+		}
+		nextStage.setLocation(x + (120 << 6), y + (23 << 6));
+		if(nextStage.intersects(Player.player.getHitBox())){
+			msk.stop();
+			sbg.enterState(Main.congrats ,  new FadeOutTransition(Color.black), new FadeInTransition(Color.black));
+		}
+		
 		Input input = gc.getInput();
 		
 		gravity();
 		//Enemy on the move
 		
-		enemyCheck(delta);
+		
 		
 		float change = delta * speed;
 
@@ -149,25 +190,15 @@ public class Base extends BasicGameState{
 				&& !Player.player.getDamageStatus() && shooting < 10){
 			shooting = shootingLimit;
 			if(Player.player.getDirection().equals("right"))
-				playerProjectileList.add(new PlayerProjectile(-x + 640/2 + 45,-y + 480/2 + 8,Player.player.getDirection()));
+				playerProjectileList.add(new PlayerProjectile(-x + Main.width/2 + 45,-y + Main.height/2 + 8,Player.player.getDirection()));
 			else
-				playerProjectileList.add(new PlayerProjectile(-x + 640/2 - 45,-y + 480/2 + 8,Player.player.getDirection()));
+				playerProjectileList.add(new PlayerProjectile(-x + Main.width/2 - 45,-y + Main.height/2 + 8,Player.player.getDirection()));
 			Player.player.setShooting(true);
 		}
 		
-		if(input.isKeyPressed(Input.KEY_C)
-				&& !Player.player.getDamageStatus() && shooting < 10 && patronum <= 0){
-			shooting = shootingLimit;
-			if(Player.player.getDirection().equals("right"))
-				playerProjectileList.add(new Patronous(-x + 640/2 + 60,-y + 480/2 + 8,Player.player.getDirection()));
-			else
-				playerProjectileList.add(new Patronous(-x + 640/2 - 90,-y + 480/2 + 8,Player.player.getDirection()));
-			Player.player.setShooting(true);
-			patronum = patronumLimit;
-			
-		}
 		//Input ends
 		
+		enemyCheck(delta);
 		
 		//Checking jump
 		if(jump > 0){
@@ -182,7 +213,7 @@ public class Base extends BasicGameState{
 			Player.player.setShooting(false);
 		}
 		
-		if(patronum > 0) patronum--;
+		
 		//Checking damage
 		if(damage > 0){
 			damage--;
@@ -210,6 +241,7 @@ public class Base extends BasicGameState{
 		for(Entity z: enemyList){
 			if(z.collision(Player.player) && !z.damageStatus()){
 				damage = damageLengthLimit;
+				Player.player.healthDeplete();
 				break;
 			}
 		}
@@ -217,6 +249,7 @@ public class Base extends BasicGameState{
 		for(Entity z: enemyProjectileList){
 			if(z.collision(Player.player) && !z.damageStatus()){
 				damage = damageLengthLimit;
+				Player.player.healthDeplete();
 				z.damage(0);
 				break;
 			}
@@ -236,6 +269,7 @@ public class Base extends BasicGameState{
 		Iterator<Entity> it = enemyList.iterator();
 		while(it.hasNext()){
 			Entity p = it.next();
+			
 			if(!p.isAlive()){
 				sfxList.add(sfxfac.getSFX((int) p.getX(), (int) p.getY(), "apparate", "green"));
 				it.remove();
@@ -320,7 +354,7 @@ public class Base extends BasicGameState{
 		}
 		for(int i = 0 ; i < terrainMap.getWidth(); i++){
 			for(int j = 0 ; j < terrainMap.getHeight(); j++){
-				Inanimate inanim = infac.getInanimateObject(i, j, terrainMap.getRGB(i, j));
+				Entity inanim = infac.getInanimateObject(i, j, terrainMap.getRGB(i, j));
 				if(inanim != null)
 					entityList.add(inanim);
 				Enemy enemy = enemyfac.getEnemy(i, j, terrainMap.getRGB(i, j));
